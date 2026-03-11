@@ -66,9 +66,6 @@ export default function Dashboard({ initialOrders }: { initialOrders: Order[] })
         return 'low';
     };
 
-    if (!isMounted) return null; // Prevent hydration error by waiting for first client render
-
-
     const processedOrders = useMemo(() => {
         let filtered = orders.filter(order => {
             const isTabMatch = activeTab === 'active'
@@ -207,6 +204,8 @@ export default function Dashboard({ initialOrders }: { initialOrders: Order[] })
             console.error('Error marking order as done:', error);
         }
     };
+
+    if (!isMounted) return null;
 
     return (
         <div className="min-h-screen bg-[#F8FAFC]">
