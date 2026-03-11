@@ -10,10 +10,16 @@ const prismaClientSingleton = () => {
     try {
       // Always write or verify the cert exists in the working directory
       fs.writeFileSync(certPath, process.env.TIDB_CA_CERT);
-      console.log("[Prisma] SSL certificate prepared at /tmp/isrgrootx1.pem");
-    } catch (error) {
-      console.error("[Prisma] Error writing SSL certificate:", error);
+      const exists = fs.existsSync(certPath);
+      const stats = exists ? fs.statSync(certPath) : null;
+      console.log(
+        `[Prisma] SSL certificate prepared at ${certPath}. Exists: ${exists}, Size: ${stats?.size}`,
+      );
+    } catch (error: any) {
+      console.error("[Prisma] Error writing SSL certificate:", error.message);
     }
+  } else {
+    console.warn("[Prisma] TIDB_CA_CERT not found in environment variables.");
   }
   return new PrismaClient();
 };
