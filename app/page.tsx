@@ -6,8 +6,9 @@ export const dynamic = 'force-dynamic';
 
 async function getOrders() {
     const dbUrl = process.env.DATABASE_URL || '';
+    const timestamp = '2026-03-11 11:45';
     const maskedUrl = dbUrl.replace(/:[^:@]+@/, ':****@');
-    console.log('[Server] Database URL:', maskedUrl);
+    console.log(`[Server] [${timestamp}] Database URL:`, maskedUrl);
     console.log('[Server] TIDB_CA_CERT present:', !!process.env.TIDB_CA_CERT);
     try {
         const orders = await prisma.order.findMany({
