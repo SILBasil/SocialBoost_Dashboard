@@ -5,7 +5,9 @@ import Dashboard from '@/components/Dashboard';
 export const dynamic = 'force-dynamic';
 
 async function getOrders() {
-    console.log('[Server] Database URL present:', !!process.env.DATABASE_URL);
+    const dbUrl = process.env.DATABASE_URL || '';
+    const maskedUrl = dbUrl.replace(/:[^:@]+@/, ':****@');
+    console.log('[Server] Database URL:', maskedUrl);
     console.log('[Server] TIDB_CA_CERT present:', !!process.env.TIDB_CA_CERT);
     try {
         const orders = await prisma.order.findMany({
