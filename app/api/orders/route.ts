@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const orders = await prisma.order.findMany({
@@ -31,15 +33,27 @@ export async function POST(request: Request) {
         service: body.service,
         totalAmount: body.totalAmount,
         startDate: body.startDate ? new Date(body.startDate) : new Date(),
-        endDate: body.deadline ? new Date(body.deadline) : null,
-        status: "pending",
+        endDate: body.endDate ? new Date(body.endDate) : null,
+        status: body.status || "pending",
+        price: body.price,
+        originalCount: body.originalCount,
+        foreignAmount: body.foreignAmount,
+        foreignBonus: body.foreignBonus,
+        thaiAmount: body.thaiAmount,
+        thaiBonus: body.thaiBonus,
+        foreignDone: body.foreignDone || 0,
+        thaiDone: body.thaiDone || 0,
+        notes: body.notes,
       },
     });
     return NextResponse.json(order);
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error creating order:", error);
     return NextResponse.json(
-      { error: "Failed to create order" },
+      {
+        error: "Failed to create order",
+        details: error?.message || String(error),
+      },
       { status: 500 },
     );
   }

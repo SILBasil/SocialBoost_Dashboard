@@ -28,10 +28,13 @@ export async function PATCH(
       data: data,
     });
     return NextResponse.json(updatedOrder);
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error updating order:", error);
     return NextResponse.json(
-      { error: "Error updating order" },
+      {
+        error: "Error updating order",
+        details: error?.message || String(error),
+      },
       { status: 500 },
     );
   }
