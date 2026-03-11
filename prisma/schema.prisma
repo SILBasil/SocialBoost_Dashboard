@@ -38,7 +38,7 @@ model Order {
   endDate         DateTime? // วันที่สิ้นสุด
   timeSpent       String?   // เวลาที่ใช้ไป
   
-  status          String   @default("pending") // waiting (รับยอด/รอสร้างงาน), pending (รอดำเนินการ), working (กำลังดำเนินการ), done (เสร็จสิ้น)
+  status          String   @default("pending") // waiting (รับยอด), pending (รอดำเนินการ), working (กำลังทำ), completed (เสร็จรอส่ง), done (ส่งงานแล้ว)
   speed           String?  @default("normal")  // ความเร็ว: normal (ปกติ), urgent (เร่งด่วน), drip (ทยอยทำ)
   notes           String?  @db.Text            // หมายเหตุ
   

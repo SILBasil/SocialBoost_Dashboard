@@ -164,7 +164,8 @@ export default function EditOrderModal({ isOpen, onClose, onSave, order }: EditO
                                                 <option value="waiting">รับยอด/รอจ้างงาน (Waiting)</option>
                                                 <option value="pending">รอดำเนินการ (Pending)</option>
                                                 <option value="working">กำลังดำเนินการ (Working)</option>
-                                                <option value="done">เสร็จสิ้น (Done)</option>
+                                                <option value="completed">เสร็จสิ้น (รอส่งมอบ)</option>
+                                                <option value="done">ส่งงานแล้ว (Done)</option>
                                             </select>
                                         </div>
                                         <div>

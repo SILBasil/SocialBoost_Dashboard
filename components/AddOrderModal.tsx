@@ -149,8 +149,11 @@ export default function AddOrderModal({ onClose, onAdd }: AddOrderModalProps) {
                                         <Activity className="w-3.5 h-3.5" /> สถานะงาน
                                     </label>
                                     <select name="status" value={formData.status} onChange={handleChange} className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none font-bold">
-                                        <option value="waiting">รับยอด (รอสร้างงาน)</option>
-                                        <option value="pending">เริ่ม/รอดำเนินการ</option>
+                                        <option value="waiting">รอรับยอด/สร้างงาน</option>
+                                        <option value="pending">รอเริ่มทำ/ดำเนินการ</option>
+                                        <option value="working">กำลังดำเนินการ</option>
+                                        <option value="completed">เสร็จสิ้น (รอส่งมอบ)</option>
+                                        <option value="done">ส่งงานแล้ว (Done)</option>
                                     </select>
                                 </div>
                                 <div>

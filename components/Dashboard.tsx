@@ -70,7 +70,7 @@ export default function Dashboard({ initialOrders }: { initialOrders: Order[] })
     const processedOrders = useMemo(() => {
         let filtered = orders.filter(order => {
             const isTabMatch = activeTab === 'active'
-                ? (order.status === 'pending' || order.status === 'working' || order.status === 'waiting')
+                ? (order.status === 'pending' || order.status === 'working' || order.status === 'waiting' || order.status === 'completed')
                 : (order.status === 'done');
 
             const matchSearch = (order.clientName?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false) ||
@@ -290,7 +290,8 @@ export default function Dashboard({ initialOrders }: { initialOrders: Order[] })
                                 <option value="waiting">รอรับยอด/สร้างงาน</option>
                                 <option value="pending">ยังไม่เริ่ม</option>
                                 <option value="working">กำลังทำ</option>
-                                {activeTab === 'completed' && <option value="done">เสร็จแล้ว</option>}
+                                <option value="completed">เสร็จ/รอส่ง</option>
+                                {activeTab === 'completed' && <option value="done">ส่งงานแล้ว</option>}
                             </select>
                             <button
                                 onClick={() => setIsAddModalOpen(true)}
@@ -408,7 +409,8 @@ function MobileOrderCard({ order, index, urgency, onUpdate, onMarkDone, onEdit }
                     <div>
                         <p className="font-black text-slate-900 text-sm leading-tight">{order.clientName || 'ระบุชื่อลูกค้า'}</p>
                         <div className="flex flex-wrap items-center gap-2 mt-1">
-                            {order.status === 'waiting' && <span className="text-[9px] font-black bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded flex items-center gap-1">รอรับยอด ⏳</span>}
+                            {order.status === 'waiting' && <span className="text-[9px] font-black bg-slate-100 text-slate-500 px-2 py-0.5 rounded flex items-center gap-1">รอรับยอด ⏳</span>}
+                            {order.status === 'completed' && <span className="text-[9px] font-black bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded flex items-center gap-1">รอส่งงาน 📦</span>}
                             {order.speed === 'urgent' && <span className="text-[9px] font-black bg-rose-100 text-rose-600 px-2 py-0.5 rounded flex items-center gap-1">งานด่วน 🔥</span>}
                             {order.speed === 'drip' && <span className="text-[9px] font-black bg-amber-100 text-amber-600 px-2 py-0.5 rounded flex items-center gap-1">ทยอย 💧</span>}
                             <span className="text-[9px] font-black bg-slate-100 text-slate-500 px-2 py-0.5 rounded uppercase">{order.platform}</span>
@@ -419,8 +421,8 @@ function MobileOrderCard({ order, index, urgency, onUpdate, onMarkDone, onEdit }
                 <div className="flex items-center gap-2">
                     {urgency === 'high' && <div className="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.6)] animate-pulse" />}
                     {urgency === 'done' && <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />}
-                    <button onClick={onEdit} className="p-2 text-slate-400 hover:text-slate-900 bg-slate-50 rounded-lg">
-                        <FileText className="w-4 h-4" />
+                    <button onClick={onEdit} className="px-3 py-1.5 text-[10px] font-black uppercase text-slate-500 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors">
+                        แก้ไข
                     </button>
                 </div>
             </div>
@@ -462,17 +464,28 @@ function MobileOrderCard({ order, index, urgency, onUpdate, onMarkDone, onEdit }
             </div>
 
             <div className="flex gap-3">
-                <a href={order.targetLink} target="_blank" className="flex-1 py-2.5 bg-slate-50 text-slate-600 rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-2">
-                    ลิงก์งาน <ArrowUpRight className="w-3 h-3" />
+                <a href={order.targetLink} target="_blank" className="flex-1 py-2.5 bg-slate-50 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-2 transition-colors">
+                    <ArrowUpRight className="w-4 h-4" /> ดูเป้าหมาย
                 </a>
-                {order.status !== 'done' && (
-                    <button
-                        onClick={() => onMarkDone(order.id)}
-                        className="flex-1 py-2.5 bg-indigo-600 text-white rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-indigo-100"
-                    >
-                        จัดส่งงาน <Check className="w-3 h-3" />
-                    </button>
-                )}
+                <select
+                    value={order.status}
+                    onChange={(e) => {
+                        if (e.target.value === 'done') onMarkDone(order.id);
+                        else onUpdate(order.id, { status: e.target.value });
+                    }}
+                    className={cn(
+                        "flex-[1.5] py-2.5 px-3 border outline-none cursor-pointer rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-sm text-center appearance-none",
+                        order.status === 'done' ? "bg-emerald-50 text-emerald-700 border-emerald-200" :
+                            order.status === 'completed' ? "bg-indigo-50 text-indigo-700 border-indigo-200" :
+                                order.status === 'working' ? "bg-amber-50 text-amber-700 border-amber-200" : "bg-slate-50 text-slate-600 border-slate-200"
+                    )}
+                >
+                    <option value="waiting">สถานะ: รอรับยอด</option>
+                    <option value="pending">สถานะ: รอเริ่มทำ</option>
+                    <option value="working">สถานะ: กำลังทำ</option>
+                    <option value="completed">สถานะ: เสร็จ/รอส่ง</option>
+                    <option value="done">สถานะ: ส่งงานแล้ว ✓</option>
+                </select>
             </div>
         </div>
     );
@@ -534,7 +547,8 @@ function OrderRow({ order, index, urgency, onUpdate, onMarkDone, onEdit }: any) 
                     <ArrowUpRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </a>
                 <div className="flex flex-wrap items-center gap-2 mt-1.5">
-                    {order.status === 'waiting' && <span className="text-[9px] font-black bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded tracking-wider flex items-center gap-1">รอรับยอด ⏳</span>}
+                    {order.status === 'waiting' && <span className="text-[9px] font-black bg-slate-100 text-slate-500 px-2 py-0.5 rounded tracking-wider flex items-center gap-1">รอรับยอด ⏳</span>}
+                    {order.status === 'completed' && <span className="text-[9px] font-black bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded tracking-wider flex items-center gap-1">รอส่งงาน 📦</span>}
                     {order.speed === 'urgent' && <span className="text-[9px] font-black bg-rose-100 text-rose-600 px-2 py-0.5 rounded tracking-wider flex items-center gap-1">งานด่วน 🔥</span>}
                     {order.speed === 'drip' && <span className="text-[9px] font-black bg-amber-100 text-amber-600 px-2 py-0.5 rounded tracking-wider flex items-center gap-1">ทยอย 💧</span>}
                     <span className="text-[9px] font-black bg-slate-100 text-slate-500 px-2 py-0.5 rounded uppercase tracking-wider">{order.platform}</span>
@@ -596,23 +610,34 @@ function OrderRow({ order, index, urgency, onUpdate, onMarkDone, onEdit }: any) 
                 ) : <span className="text-slate-200 font-bold">—</span>}
             </td>
             <td className="px-8 py-5 text-right">
-                <div className="flex items-center justify-end gap-3">
-                    <button onClick={onEdit} className="p-2.5 text-slate-300 hover:text-slate-900 transition-all bg-slate-50 hover:bg-slate-100 rounded-xl" title="แก้ไขข้อมูล">
-                        <FileText className="w-5 h-5" />
+                <div className="flex items-center justify-end gap-3 w-full">
+                    <button onClick={onEdit} className="px-4 py-2.5 text-slate-500 hover:text-slate-900 transition-all bg-slate-100 hover:bg-slate-200 rounded-xl text-[10px] font-black uppercase tracking-widest">
+                        แก้ไข
                     </button>
-                    {order.status !== 'done' ? (
-                        <button onClick={() => onMarkDone(order.id)} className="px-6 py-2.5 bg-slate-900 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-md shadow-slate-200">
-                            ปิดงาน
-                        </button>
-                    ) : (
-                        <div className="flex flex-col items-end gap-1.5">
-                            <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-lg shadow-sm">
-                                <CheckCircle className="w-3 h-3" />
-                                <span className="text-[10px] font-black uppercase tracking-wider">สำเร็จแล้ว</span>
-                            </div>
-                            <div className="flex flex-col items-end">
+                    <div className="flex flex-col items-end gap-1.5">
+                        <select
+                            value={order.status}
+                            onChange={(e) => {
+                                if (e.target.value === 'done') onMarkDone(order.id);
+                                else onUpdate(order.id, { status: e.target.value });
+                            }}
+                            className={cn(
+                                "px-3 py-2 border outline-none cursor-pointer rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-sm appearance-none text-center min-w-[120px]",
+                                order.status === 'done' ? "bg-emerald-50 text-emerald-700 border-emerald-200" :
+                                    order.status === 'completed' ? "bg-indigo-50 text-indigo-700 border-indigo-200" :
+                                        order.status === 'working' ? "bg-amber-50 text-amber-700 border-amber-200" : "bg-white text-slate-600 border-slate-200 shadow-sm"
+                            )}
+                        >
+                            <option value="waiting">รอรับยอด</option>
+                            <option value="pending">รอเริ่มงาน</option>
+                            <option value="working">กำลังทำ</option>
+                            <option value="completed">เสร็จ/รอส่ง</option>
+                            <option value="done">ส่งงานแล้ว ✓</option>
+                        </select>
+                        {order.status === 'done' && (
+                            <div className="flex flex-col items-end mt-1">
                                 <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter mb-0.5">
-                                    เสร็จจริง: {formatDate(order.timeSpent)}
+                                    เวลาส่ง: {formatDate(order.timeSpent)}
                                 </span>
                                 {timelineSummary && (
                                     <span className={cn("text-[9px] font-black uppercase italic tracking-tight", timelineSummary.color)}>
@@ -620,8 +645,8 @@ function OrderRow({ order, index, urgency, onUpdate, onMarkDone, onEdit }: any) 
                                     </span>
                                 )}
                             </div>
-                        </div>
-                    )}
+                        )}
+                    </div>
                 </div>
             </td>
         </tr>
