@@ -6,11 +6,11 @@ import path from "path";
 const prismaClientSingleton = () => {
   // Check for CA cert content in environment (for Vercel/Production)
   if (process.env.TIDB_CA_CERT) {
-    const certPath = path.join(process.cwd(), "isrgrootx1.pem");
+    const certPath = "/tmp/isrgrootx1.pem";
     try {
       // Always write or verify the cert exists in the working directory
       fs.writeFileSync(certPath, process.env.TIDB_CA_CERT);
-      console.log("[Prisma] SSL certificate prepared.");
+      console.log("[Prisma] SSL certificate prepared at /tmp/isrgrootx1.pem");
     } catch (error) {
       console.error("[Prisma] Error writing SSL certificate:", error);
     }
