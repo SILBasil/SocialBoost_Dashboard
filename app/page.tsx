@@ -5,16 +5,20 @@ import Dashboard from '@/components/Dashboard';
 export const dynamic = 'force-dynamic';
 
 async function getOrders() {
+    console.log('[Server] Database URL present:', !!process.env.DATABASE_URL);
+    console.log('[Server] TIDB_CA_CERT present:', !!process.env.TIDB_CA_CERT);
     try {
         const orders = await prisma.order.findMany({
             orderBy: {
                 startDate: 'desc',
             },
         });
-        console.log(`[Server] Fetched ${orders.length} orders from database.`);
+        console.log(`[Server] Success: Fetched ${orders.length} orders.`);
         return orders;
-    } catch (error) {
-        console.error('Error fetching orders:', error);
+    } catch (error: any) {
+        console.error('[Server] Database Error:', error.message);
+        // Log more details if available
+        if (error.code) console.error('[Server] Error Code:', error.code);
         return [];
     }
 }
