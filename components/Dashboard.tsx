@@ -49,6 +49,11 @@ export default function Dashboard({ initialOrders }: { initialOrders: Order[] })
         key: 'startDate',
         direction: 'asc'
     });
+    const [isMounted, setIsMounted] = useState(false);
+
+    React.useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
     const getUrgency = (startDate: string | null | undefined, status: string) => {
         if (status === 'done') return 'done';
@@ -60,6 +65,9 @@ export default function Dashboard({ initialOrders }: { initialOrders: Order[] })
         if (diffHours > 24) return 'medium';
         return 'low';
     };
+
+    if (!isMounted) return null; // Prevent hydration error by waiting for first client render
+
 
     const processedOrders = useMemo(() => {
         let filtered = orders.filter(order => {
