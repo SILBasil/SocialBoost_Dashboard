@@ -42,6 +42,28 @@ model Order {
   speed           String?  @default("normal")  // ความเร็ว: normal (ปกติ), urgent (เร่งด่วน), drip (ทยอยทำ)
   notes           String?  @db.Text            // หมายเหตุ
   
+  // New Financial & Advanced Tracking Fields
+  providerLink          String?  // ลิงก์เว็บปั๊ม (เว็บของผู้ให้บริการ)
+  targetPlatformAmount  Int?     // จำนวนที่ต้องการปั๊ม (จากเว็บผู้ให้บริการ)
+  feePercentage         Float?   @default(13.0) // หักค่าธรรมเนียม (%)
+  feeAmount             Float?   // จำนวนเงินค่าธรรมเนียมที่ถูกหัก
+  netRevenue            Float?   // รับสุทธิ (Price - FeeAmount)
+  totalCost             Float?   // ต้นทุนรวม (จาก BoostHistory)
+  profit                Float?   // กำไร (NetRevenue - TotalCost)
+
+  boostHistories  BoostHistory[]
+
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }
+
+model BoostHistory {
+  id        String   @id @default(cuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  amount    Int      // จำนวนที่ปั๊มในครั้งนี้
+  cost      Float    // ต้นทุนครั้งนี้
+  note      String?  @db.Text // บันทึกย่อ
+  createdAt DateTime @default(now())
+}
+

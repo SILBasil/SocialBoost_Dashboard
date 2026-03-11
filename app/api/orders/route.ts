@@ -45,6 +45,24 @@ export async function POST(request: Request) {
         thaiDone: body.thaiDone || 0,
         notes: body.notes,
         speed: body.speed || "normal",
+        providerLink: body.providerLink || null,
+        targetPlatformAmount: body.targetPlatformAmount
+          ? parseInt(body.targetPlatformAmount)
+          : null,
+        feePercentage: body.feePercentage
+          ? parseFloat(body.feePercentage)
+          : 13.0,
+        feeAmount: body.price
+          ? (body.price *
+              (body.feePercentage ? parseFloat(body.feePercentage) : 13.0)) /
+            100
+          : 0,
+        netRevenue: body.price
+          ? body.price -
+            (body.price *
+              (body.feePercentage ? parseFloat(body.feePercentage) : 13.0)) /
+              100
+          : 0,
       },
     });
     return NextResponse.json(order);
