@@ -1,10 +1,10 @@
 import './globals.css';
+import AuthProvider from '@/components/AuthProvider';
 
 export const metadata = {
   title: 'SocialBoost Dashboard',
   description: 'Premium Social Media Management Dashboard',
 }
-
 
 export default function RootLayout({
   children,
@@ -13,7 +13,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <AuthProvider>{children}</AuthProvider>
+      </body>
     </html>
   )
 }

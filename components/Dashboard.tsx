@@ -1,6 +1,8 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useSession, signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import {
     AlertCircle, Clock, CheckCircle, MessageCircle, Plus,
     Search, Filter, Activity, Bell, User, ArrowUpRight, Check, X, FileText, Calendar,
@@ -39,6 +41,8 @@ interface Order {
 }
 
 export default function Dashboard({ initialOrders }: { initialOrders: Order[] }) {
+    const { data: session, status } = useSession();
+    const router = useRouter();
     const [orders, setOrders] = useState<Order[]>(initialOrders);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('all');
@@ -52,9 +56,35 @@ export default function Dashboard({ initialOrders }: { initialOrders: Order[] })
     });
     const [isMounted, setIsMounted] = useState(false);
 
-    React.useEffect(() => {
+    useEffect(() => {
         setIsMounted(true);
     }, []);
+
+    // Redirect if not authenticated
+    useEffect(() => {
+        if (status === "unauthenticated") {
+            router.push("/login");
+        }
+    }, [status, router]);
+
+    const fetchOrders = async () => {
+        if (status !== "authenticated") return;
+        try {
+            const response = await fetch('/api/orders');
+            if (response.ok) {
+                const data = await response.json();
+                setOrders(data);
+            }
+        } catch (error) {
+            console.error('Error fetching orders:', error);
+        }
+    };
+
+    useEffect(() => {
+        if (status === "authenticated") {
+            fetchOrders();
+        }
+    }, [status]);
 
     const getUrgency = (startDate: string | null | undefined, status: string) => {
         if (status === 'done') return 'done';
@@ -220,12 +250,26 @@ export default function Dashboard({ initialOrders }: { initialOrders: Order[] })
                         <h1 className="text-lg font-black tracking-tight text-slate-900 uppercase">BoostFlow OS</h1>
                     </div>
                     <div className="flex items-center gap-5">
-                        <div className="hidden sm:flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-xl border border-slate-200/50">
-                            <div className="w-6 h-6 rounded-full bg-white shadow-sm flex items-center justify-center">
-                                <User className="w-4 h-4 text-slate-500" />
+                        {session?.user && (
+                            <div className="hidden sm:flex items-center gap-3 px-4 py-2 bg-slate-100 rounded-xl border border-slate-200/50">
+                                {session.user.image ? (
+                                    <img src={session.user.image} alt="User" className="w-6 h-6 rounded-full border border-white shadow-sm" />
+                                ) : (
+                                    <div className="w-6 h-6 rounded-full bg-white shadow-sm flex items-center justify-center">
+                                        <User className="w-4 h-4 text-slate-500" />
+                                    </div>
+                                )}
+                                <div className="flex flex-col">
+                                    <span className="text-[10px] font-black text-slate-900 leading-none">{session.user.name}</span>
+                                    <button
+                                        onClick={() => signOut()}
+                                        className="text-[9px] font-bold text-slate-400 hover:text-rose-500 transition-colors text-left"
+                                    >
+                                        ออกจากระบบ
+                                    </button>
+                                </div>
                             </div>
-                            <span className="text-xs font-black text-slate-600">ผู้ดูแลระบบ</span>
-                        </div>
+                        )}
                         <button className="p-2 text-slate-400 hover:text-slate-600 transition-colors">
                             <Bell className="w-6 h-6" />
                         </button>
