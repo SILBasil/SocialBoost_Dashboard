@@ -252,7 +252,7 @@ export default function Dashboard({ initialOrders }: { initialOrders: Order[] })
                 </div>
 
                 {/* Stats */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                     <StatCard label="งานทั้งหมด" value={stats.total} />
                     <StatCard label="งานด่วน" value={stats.urgentCount} color="rose" />
                     <StatCard label="กำลังทำ" value={stats.workingCount} color="indigo" />
@@ -261,8 +261,8 @@ export default function Dashboard({ initialOrders }: { initialOrders: Order[] })
 
                 {/* Table Area */}
                 <div className="bg-white rounded-[32px] border border-slate-200/60 shadow-sm overflow-hidden">
-                    <div className="px-8 py-6 border-b border-slate-100 flex flex-col sm:flex-row gap-6 justify-between items-center bg-white">
-                        <div className="relative w-full sm:max-w-md group">
+                    <div className="px-4 sm:px-8 py-6 border-b border-slate-100 flex flex-col lg:flex-row gap-4 sm:gap-6 justify-between items-center bg-white">
+                        <div className="relative w-full lg:max-w-md group">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                             <input
                                 type="text"
@@ -272,11 +272,11 @@ export default function Dashboard({ initialOrders }: { initialOrders: Order[] })
                                 className="w-full pl-12 pr-6 py-3.5 text-sm bg-slate-50 border border-slate-200 rounded-2xl focus:bg-white focus:ring-4 focus:ring-slate-100 focus:border-slate-300 outline-none transition-all font-bold"
                             />
                         </div>
-                        <div className="flex items-center gap-3 w-full sm:w-auto">
+                        <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
                             <select
                                 value={filterStatus}
                                 onChange={(e) => setFilterStatus(e.target.value)}
-                                className="bg-slate-50 border border-slate-200 text-slate-600 text-sm font-black uppercase px-6 py-3.5 rounded-2xl outline-none cursor-pointer hover:bg-slate-100 transition-colors"
+                                className="w-full sm:w-auto bg-slate-50 border border-slate-200 text-slate-600 text-sm font-black uppercase px-6 py-3.5 rounded-2xl outline-none cursor-pointer hover:bg-slate-100 transition-colors"
                             >
                                 <option value="all">สถานะ: ทั้งหมด</option>
                                 <option value="pending">ยังไม่เริ่ม</option>
@@ -285,14 +285,36 @@ export default function Dashboard({ initialOrders }: { initialOrders: Order[] })
                             </select>
                             <button
                                 onClick={() => setIsAddModalOpen(true)}
-                                className="bg-slate-900 text-white px-8 py-3.5 rounded-2xl text-sm font-black uppercase tracking-wider hover:bg-slate-800 transition-all shadow-lg shadow-slate-200 shrink-0"
+                                className="w-full sm:w-auto bg-slate-900 text-white px-8 py-3.5 rounded-2xl text-sm font-black uppercase tracking-wider hover:bg-slate-800 transition-all shadow-lg shadow-slate-200 shrink-0"
                             >
                                 <Plus className="w-5 h-5 inline-block mr-2" /> เพิ่มงานใหม่
                             </button>
                         </div>
                     </div>
 
-                    <div className="overflow-x-auto">
+                    {/* Mobile/Tablet View (Cards) */}
+                    <div className="lg:hidden divide-y divide-slate-100">
+                        {processedOrders.length > 0 ? (
+                            processedOrders.map((order, idx) => (
+                                <MobileOrderCard
+                                    key={order.id}
+                                    order={order}
+                                    index={idx + 1}
+                                    urgency={getUrgency(order.startDate, order.status)}
+                                    onUpdate={updateProgress}
+                                    onMarkDone={markAsDone}
+                                    onEdit={() => { setSelectedOrder(order); setIsEditModalOpen(true); }}
+                                />
+                            ))
+                        ) : (
+                            <div className="p-12 text-center">
+                                <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">ไม่พบรายการงาน</p>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Desktop View (Table) */}
+                    <div className="hidden lg:block overflow-x-auto">
                         <table className="w-full text-left text-sm whitespace-nowrap">
                             <thead className="bg-[#FAFBFD] text-slate-400 border-b border-slate-100">
                                 <tr>
@@ -351,9 +373,95 @@ function StatCard({ label, value, color = 'slate' }: { label: string, value: num
         slate: 'text-slate-500 bg-slate-50 border-slate-200'
     };
     return (
-        <div className="bg-white p-8 rounded-[28px] border border-slate-200/60 shadow-sm transition-transform hover:scale-[1.02] duration-300">
-            <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2">{label}</p>
-            <p className={cn("text-4xl font-black tracking-tighter", colorMap[color].split(' ')[0])}>{value.toLocaleString()}</p>
+        <div className="bg-white p-5 sm:p-8 rounded-[24px] sm:rounded-[28px] border border-slate-200/60 shadow-sm transition-transform hover:scale-[1.02] duration-300">
+            <p className="text-[10px] sm:text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1 sm:mb-2">{label}</p>
+            <p className={cn("text-2xl sm:text-4xl font-black tracking-tighter", colorMap[color].split(' ')[0])}>{value.toLocaleString()}</p>
+        </div>
+    );
+}
+
+function MobileOrderCard({ order, index, urgency, onUpdate, onMarkDone, onEdit }: any) {
+    const fTotal = (order.foreignAmount || 0) + (order.foreignBonus || 0);
+    const fPct = fTotal > 0 ? Math.round(((order.foreignDone || 0) / fTotal) * 100) : 0;
+    const tTotal = (order.thaiAmount || 0) + (order.thaiBonus || 0);
+    const tPct = tTotal > 0 ? Math.round(((order.thaiDone || 0) / tTotal) * 100) : 0;
+
+    const formatDate = (dateStr: string | null | undefined) => {
+        if (!dateStr) return '—';
+        return new Date(dateStr).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' });
+    };
+
+    return (
+        <div className="p-5 space-y-5 bg-white sm:p-6">
+            <div className="flex justify-between items-start">
+                <div className="flex items-center gap-3">
+                    <span className="text-sm font-black text-slate-300 italic">#{String(index).padStart(2, '0')}</span>
+                    <div>
+                        <p className="font-black text-slate-900 text-sm leading-tight">{order.clientName || 'ระบุชื่อลูกค้า'}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                            <span className="text-[9px] font-black bg-slate-100 text-slate-500 px-2 py-0.5 rounded uppercase">{order.platform}</span>
+                            <span className="text-[9px] font-mono font-bold text-slate-300">#{order.orderId.slice(-8)}</span>
+                        </div>
+                    </div>
+                </div>
+                <div className="flex items-center gap-2">
+                    {urgency === 'high' && <div className="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.6)] animate-pulse" />}
+                    {urgency === 'done' && <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />}
+                    <button onClick={onEdit} className="p-2 text-slate-400 hover:text-slate-900 bg-slate-50 rounded-lg">
+                        <FileText className="w-4 h-4" />
+                    </button>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">เริ่มเมื่อ</p>
+                    <p className="text-[10px] font-bold text-slate-600 flex items-center gap-1.5"><History className="w-3 h-3" /> {formatDate(order.startDate)}</p>
+                </div>
+                <div className="space-y-1">
+                    <p className="text-[9px] font-black text-rose-400 uppercase tracking-widest">กำหนดส่ง</p>
+                    <p className="text-[10px] font-bold text-rose-500 flex items-center gap-1.5"><Calendar className="w-3 h-3" /> {formatDate(order.endDate)}</p>
+                </div>
+            </div>
+
+            <div className="space-y-4">
+                {fTotal > 0 && (
+                    <div className="space-y-1.5">
+                        <div className="flex justify-between text-[9px] font-black uppercase text-slate-400">
+                            <span>ต่างชาติ ({fPct}%)</span>
+                            <span>{order.foreignDone || 0} / {fTotal}</span>
+                        </div>
+                        <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                            <motion.div initial={{ width: 0 }} animate={{ width: `${fPct}%` }} className="h-full bg-slate-900 rounded-full" />
+                        </div>
+                    </div>
+                )}
+                {tTotal > 0 && (
+                    <div className="space-y-1.5">
+                        <div className="flex justify-between text-[9px] font-black uppercase text-emerald-500">
+                            <span>คนไทย ({tPct}%)</span>
+                            <span>{order.thaiDone || 0} / {tTotal}</span>
+                        </div>
+                        <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                            <motion.div initial={{ width: 0 }} animate={{ width: `${tPct}%` }} className="h-full bg-emerald-500 rounded-full" />
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            <div className="flex gap-3">
+                <a href={order.targetLink} target="_blank" className="flex-1 py-2.5 bg-slate-50 text-slate-600 rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-2">
+                    ลิงก์งาน <ArrowUpRight className="w-3 h-3" />
+                </a>
+                {order.status !== 'done' && (
+                    <button
+                        onClick={() => onMarkDone(order.id)}
+                        className="flex-1 py-2.5 bg-indigo-600 text-white rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-indigo-100"
+                    >
+                        จัดส่งงาน <Check className="w-3 h-3" />
+                    </button>
+                )}
+            </div>
         </div>
     );
 }
