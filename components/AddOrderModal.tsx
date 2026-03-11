@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Plus, User, MessageCircle, Globe, Hash, Check, Target, DollarSign, Calendar, Clock, FileText } from 'lucide-react';
+import { X, Plus, User, MessageCircle, Globe, Hash, Check, Target, DollarSign, Calendar, Clock, FileText, Activity, Zap } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface AddOrderModalProps {
@@ -22,7 +22,9 @@ export default function AddOrderModal({ onClose, onAdd }: AddOrderModalProps) {
         thaiBonus: '',
         startDate: new Date().toISOString().split('T')[0],
         endDate: '',
-        notes: ''
+        notes: '',
+        speed: 'normal',
+        status: 'pending'
     });
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -38,7 +40,8 @@ export default function AddOrderModal({ onClose, onAdd }: AddOrderModalProps) {
             totalAmount: (parseInt(formData.foreignAmount) || 0) + (parseInt(formData.foreignBonus) || 0) + (parseInt(formData.thaiAmount) || 0) + (parseInt(formData.thaiBonus) || 0),
             foreignDone: 0,
             thaiDone: 0,
-            status: 'pending',
+            speed: formData.speed,
+            status: formData.status,
             orderId: `ORD-${new Date().getFullYear()}${(Math.floor(Math.random() * 900) + 100)}`
         });
     };
@@ -137,6 +140,28 @@ export default function AddOrderModal({ onClose, onAdd }: AddOrderModalProps) {
                                 <div>
                                     <label className="block text-[10px] sm:text-xs font-bold text-slate-700 mb-1.5">บริการ</label>
                                     <input name="service" value={formData.service} onChange={handleChange} className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none font-bold" />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-[10px] sm:text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1.5">
+                                        <Activity className="w-3.5 h-3.5" /> สถานะงาน
+                                    </label>
+                                    <select name="status" value={formData.status} onChange={handleChange} className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none font-bold">
+                                        <option value="waiting">รับยอด (รอสร้างงาน)</option>
+                                        <option value="pending">เริ่ม/รอดำเนินการ</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] sm:text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1.5">
+                                        <Zap className="w-3.5 h-3.5 text-amber-500" /> ความเร็วทำงาน
+                                    </label>
+                                    <select name="speed" value={formData.speed} onChange={handleChange} className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none font-bold">
+                                        <option value="normal">ปกติ (Normal)</option>
+                                        <option value="urgent">เร่งด่วน (Urgent)</option>
+                                        <option value="drip">ทยอยทำ (Drip-feed)</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>

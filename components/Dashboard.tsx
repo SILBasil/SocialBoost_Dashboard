@@ -34,6 +34,7 @@ interface Order {
     endDate?: string | null; // This is the DEADLINE
     timeSpent?: string | null; // We'll use this for ACTUAL COMPLETION DATE
     status: string;
+    speed?: string | null;
     notes?: string | null;
 }
 
@@ -69,7 +70,7 @@ export default function Dashboard({ initialOrders }: { initialOrders: Order[] })
     const processedOrders = useMemo(() => {
         let filtered = orders.filter(order => {
             const isTabMatch = activeTab === 'active'
-                ? (order.status === 'pending' || order.status === 'working')
+                ? (order.status === 'pending' || order.status === 'working' || order.status === 'waiting')
                 : (order.status === 'done');
 
             const matchSearch = (order.clientName?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false) ||
@@ -286,6 +287,7 @@ export default function Dashboard({ initialOrders }: { initialOrders: Order[] })
                                 className="w-full sm:w-auto bg-slate-50 border border-slate-200 text-slate-600 text-sm font-black uppercase px-6 py-3.5 rounded-2xl outline-none cursor-pointer hover:bg-slate-100 transition-colors"
                             >
                                 <option value="all">สถานะ: ทั้งหมด</option>
+                                <option value="waiting">รอรับยอด/สร้างงาน</option>
                                 <option value="pending">ยังไม่เริ่ม</option>
                                 <option value="working">กำลังทำ</option>
                                 {activeTab === 'completed' && <option value="done">เสร็จแล้ว</option>}
@@ -405,7 +407,10 @@ function MobileOrderCard({ order, index, urgency, onUpdate, onMarkDone, onEdit }
                     <span className="text-sm font-black text-slate-300 italic">#{String(index).padStart(2, '0')}</span>
                     <div>
                         <p className="font-black text-slate-900 text-sm leading-tight">{order.clientName || 'ระบุชื่อลูกค้า'}</p>
-                        <div className="flex items-center gap-2 mt-1">
+                        <div className="flex flex-wrap items-center gap-2 mt-1">
+                            {order.status === 'waiting' && <span className="text-[9px] font-black bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded flex items-center gap-1">รอรับยอด ⏳</span>}
+                            {order.speed === 'urgent' && <span className="text-[9px] font-black bg-rose-100 text-rose-600 px-2 py-0.5 rounded flex items-center gap-1">งานด่วน 🔥</span>}
+                            {order.speed === 'drip' && <span className="text-[9px] font-black bg-amber-100 text-amber-600 px-2 py-0.5 rounded flex items-center gap-1">ทยอย 💧</span>}
                             <span className="text-[9px] font-black bg-slate-100 text-slate-500 px-2 py-0.5 rounded uppercase">{order.platform}</span>
                             <span className="text-[9px] font-mono font-bold text-slate-300">#{order.orderId.slice(-8)}</span>
                         </div>
@@ -528,7 +533,10 @@ function OrderRow({ order, index, urgency, onUpdate, onMarkDone, onEdit }: any) 
                     <span className="max-w-[180px] truncate">{order.targetLink.replace('https://', '')}</span>
                     <ArrowUpRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </a>
-                <div className="flex items-center gap-2 mt-1.5">
+                <div className="flex flex-wrap items-center gap-2 mt-1.5">
+                    {order.status === 'waiting' && <span className="text-[9px] font-black bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded tracking-wider flex items-center gap-1">รอรับยอด ⏳</span>}
+                    {order.speed === 'urgent' && <span className="text-[9px] font-black bg-rose-100 text-rose-600 px-2 py-0.5 rounded tracking-wider flex items-center gap-1">งานด่วน 🔥</span>}
+                    {order.speed === 'drip' && <span className="text-[9px] font-black bg-amber-100 text-amber-600 px-2 py-0.5 rounded tracking-wider flex items-center gap-1">ทยอย 💧</span>}
                     <span className="text-[9px] font-black bg-slate-100 text-slate-500 px-2 py-0.5 rounded uppercase tracking-wider">{order.platform}</span>
                     <span className="text-[9px] font-mono font-bold text-slate-300">#{order.orderId.slice(-8)}</span>
                 </div>

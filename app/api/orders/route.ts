@@ -44,6 +44,7 @@ export async function POST(request: Request) {
         foreignDone: body.foreignDone || 0,
         thaiDone: body.thaiDone || 0,
         notes: body.notes,
+        speed: body.speed || "normal",
       },
     });
     return NextResponse.json(order);

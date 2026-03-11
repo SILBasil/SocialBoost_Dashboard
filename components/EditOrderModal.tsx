@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { X, Save, User, Link as LinkIcon, MessageCircle, Hash, Globe, MousePointer2, FileText, DollarSign, Calendar } from 'lucide-react';
+import { X, Save, User, Link as LinkIcon, MessageCircle, Hash, Globe, MousePointer2, FileText, DollarSign, Calendar, Activity, Zap } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface EditOrderModalProps {
@@ -33,6 +33,7 @@ export default function EditOrderModal({ isOpen, onClose, onSave, order }: EditO
                 thaiDone: order.thaiDone || 0,
                 totalAmount: order.totalAmount || 0,
                 status: order.status || '',
+                speed: order.speed || 'normal',
                 notes: order.notes || '',
                 startDate: order.startDate ? new Date(order.startDate).toISOString().split('T')[0] : '',
                 endDate: order.endDate ? new Date(order.endDate).toISOString().split('T')[0] : '',
@@ -149,18 +150,38 @@ export default function EditOrderModal({ isOpen, onClose, onSave, order }: EditO
                                         </div>
                                     </div>
 
-                                    <div>
-                                        <label className="block text-[10px] sm:text-xs font-bold text-slate-700 mb-1.5">สถานะงาน</label>
-                                        <select
-                                            name="status"
-                                            value={formData.status}
-                                            onChange={handleChange}
-                                            className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-bold"
-                                        >
-                                            <option value="pending">ยังไม่เริ่ม (Pending)</option>
-                                            <option value="working">กำลังดำเนินการ (Working)</option>
-                                            <option value="done">เสร้จสิ้น (Done)</option>
-                                        </select>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-[10px] sm:text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1.5">
+                                                <Activity className="w-3.5 h-3.5" /> สถานะงาน
+                                            </label>
+                                            <select
+                                                name="status"
+                                                value={formData.status}
+                                                onChange={handleChange}
+                                                className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-bold"
+                                            >
+                                                <option value="waiting">รับยอด/รอจ้างงาน (Waiting)</option>
+                                                <option value="pending">รอดำเนินการ (Pending)</option>
+                                                <option value="working">กำลังดำเนินการ (Working)</option>
+                                                <option value="done">เสร็จสิ้น (Done)</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="block text-[10px] sm:text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1.5">
+                                                <Zap className="w-3.5 h-3.5 text-amber-500" /> แบบรับงาน
+                                            </label>
+                                            <select
+                                                name="speed"
+                                                value={formData.speed}
+                                                onChange={handleChange}
+                                                className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-bold"
+                                            >
+                                                <option value="normal">ปกติ (Normal)</option>
+                                                <option value="urgent">แอดด่วน (Urgent)</option>
+                                                <option value="drip">ทยอยทำ (Drip-feed)</option>
+                                            </select>
+                                        </div>
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-4">
