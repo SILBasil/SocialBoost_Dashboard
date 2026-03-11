@@ -1,0 +1,46 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Order {
+  id              String   @id @default(cuid())
+  orderId         String   @unique // ORD-2026001 style
+  targetLink      String
+  clientName      String?
+  chatLink        String?
+  platform        String   // ig, tiktok, fb, etc.
+  service         String   // ฟอล, ไลค์, วิว, etc.
+  serviceType     String?  // ต่างชาติ, ผสม, ไทย
+  price           Float?   // ราคา
+  
+  // Counts
+  originalCount   Int?     // ยอดเดิม
+  
+  // Foreign Followers (ต่างชาติ)
+  foreignAmount   Int?     // เพิ่มฟอลต่างชาติ
+  foreignBonus    Int?     // แถม
+  foreignDone     Int?     // ทำไปแล้ว
+  // foreignRemaining is calculated: (foreignAmount + foreignBonus) - foreignDone
+  
+  // Thai Followers (ไทย)
+  thaiAmount      Int?     // เพิ่มฟอลไทย
+  thaiBonus       Int?     // แถม
+  thaiDone        Int?     // ทำไปแล้ว
+  // thaiRemaining is calculated: (thaiAmount + thaiBonus) - thaiDone
+  
+  totalAmount     Int?     // ยอดรวม
+  startDate       DateTime? // วันที่เริ่ม
+  endDate         DateTime? // วันที่สิ้นสุด
+  timeSpent       String?   // เวลาที่ใช้ไป
+  
+  status          String   @default("pending") // pending (ยังไม่เริ่ม), working (กำลังดำเนินการ), done (เสร็จสิ้น)
+  notes           String?  @db.Text            // หมายเหตุ
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
